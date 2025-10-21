@@ -2,7 +2,7 @@
 <html lang="bg">
 <head>
 <meta charset="UTF-8">
-<title>Таланти 2025</title>
+<title>Математическо шоу за таланти</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 <style>
 body {
@@ -48,7 +48,6 @@ button:hover {
     box-shadow: 0 8px 20px rgba(0,0,0,0.5);
 }
 
-/* Таймер в ъгъла */
 #timer {
     position: fixed;
     top: 20px;
@@ -65,7 +64,7 @@ button:hover {
 }
 
 #numbers {
-    font-size: 8em; /* супер големи числа */
+    font-size: 8em; 
     height: 200px;
     display: flex;
     justify-content: center;
@@ -118,7 +117,7 @@ button:hover {
 </head>
 <body>
 
-<h1>Таланти 2025</h1>
+<h1>Математическо шоу за таланти</h1>
 
 <div class="buttons-container">
     <button onclick="startGame(1)">1-ва степен (до 10)</button>
@@ -126,7 +125,7 @@ button:hover {
     <button onclick="startGame(3)">3-та степен (до 1000)</button>
 </div>
 
-<div id="timer">10</div>
+<div id="timer">20</div>
 <div id="numbers"></div>
 
 <div id="inputArea" style="display:none;">
@@ -141,51 +140,79 @@ button:hover {
 let sequence = [];
 let currentSum = 0;
 let index = 0;
-let countdown = 10;
+let countdown = 20;
 let timerInterval;
+let numberInterval;
+let timeUp = false;
 
 function startGame(level) {
+    clearInterval(timerInterval);
+    clearInterval(numberInterval);
+    timeUp = false;
+
     sequence = [];
     currentSum = 0;
     index = 0;
-    countdown = 10;
-    clearInterval(timerInterval);
     document.getElementById('result').innerText = '';
     document.getElementById('error').innerText = '';
     document.getElementById('numbers').innerHTML = '';
     document.getElementById('inputArea').style.display = 'none';
     document.getElementById('userAnswer').value = '';
-    document.getElementById('timer').innerText = countdown;
 
+    // Настройки за ниво
     let maxNumber = level === 1 ? 10 : level === 2 ? 100 : 1000;
+    let intervalTime = level === 1 ? 2000 : level === 2 ? 5000 : 10000;
+    let secondNumberDelay = level === 1 ? 1000 : 5000;
+    countdown = 20; // Таймер фиксиран
 
+    // Генериране на 10 числа
     for(let i=0; i<10; i++) {
         let num = Math.floor(Math.random() * maxNumber) + 1;
         if(Math.random() < 0.5) num = -num;
         sequence.push(num);
     }
 
-    showNextNumber();
+    showFirstTwoThenInterval(secondNumberDelay, intervalTime);
     startTimer();
 }
 
-function showNextNumber() {
-    if(index < sequence.length) {
-        let num = sequence[index];
-        let sign = num >=0 ? "+" : "";
-        document.getElementById('numbers').innerHTML = ''; // махаме старото число
-        let numberDiv = document.createElement("div");
-        numberDiv.classList.add("number");
-        numberDiv.innerText = sign + num;
-        document.getElementById('numbers').appendChild(numberDiv);
-        currentSum += num;
+function showFirstTwoThenInterval(secondNumberDelay, intervalTime) {
+    if(index < sequence.length && !timeUp) {
+        // Първо число веднага
+        showNumber(sequence[index]);
         index++;
-        setTimeout(showNextNumber, 1000);
-    } else {
-        document.getElementById('numbers').innerHTML = '';
-        document.getElementById('inputArea').style.display = 'block';
-        document.getElementById('userAnswer').focus();
+        if(index < sequence.length && !timeUp) {
+            // Второ число след delay според степента
+            setTimeout(() => {
+                if(!timeUp){
+                    showNumber(sequence[index]);
+                    index++;
+                    // След това започва редовният интервал
+                    numberInterval = setInterval(() => {
+                        if(index < sequence.length && !timeUp) {
+                            showNumber(sequence[index]);
+                            index++;
+                        } else {
+                            clearInterval(numberInterval);
+                            document.getElementById('numbers').innerHTML = '';
+                            document.getElementById('inputArea').style.display = 'block';
+                            document.getElementById('userAnswer').focus();
+                        }
+                    }, intervalTime);
+                }
+            }, secondNumberDelay);
+        }
     }
+}
+
+function showNumber(num) {
+    let sign = num >=0 ? "+" : "";
+    document.getElementById('numbers').innerHTML = '';
+    let numberDiv = document.createElement("div");
+    numberDiv.classList.add("number");
+    numberDiv.innerText = sign + num;
+    document.getElementById('numbers').appendChild(numberDiv);
+    currentSum += num;
 }
 
 function startTimer() {
@@ -195,6 +222,11 @@ function startTimer() {
         document.getElementById('timer').innerText = countdown;
         if(countdown <= 0) {
             clearInterval(timerInterval);
+            timeUp = true;
+            clearInterval(numberInterval);
+            document.getElementById('numbers').innerHTML = '';
+            document.getElementById('inputArea').style.display = 'block';
+            document.getElementById('userAnswer').focus();
             document.getElementById('timer').innerText = "Времето изтече!";
         }
     }, 1000);
