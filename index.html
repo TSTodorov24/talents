@@ -163,7 +163,9 @@ function startGame(level) {
     let maxNumber = level === 1 ? 10 : level === 2 ? 100 : 1000;
     let intervalTime = level === 1 ? 2000 : level === 2 ? 5000 : 10000;
     let secondNumberDelay = level === 1 ? 1000 : 5000;
-    countdown = 20; // Таймер фиксиран
+
+    // Таймер според степента
+    countdown = level === 1 ? 20 : level === 2 ? 50 : 120;
 
     // Генериране на 10 числа
     for(let i=0; i<10; i++) {
@@ -178,16 +180,13 @@ function startGame(level) {
 
 function showFirstTwoThenInterval(secondNumberDelay, intervalTime) {
     if(index < sequence.length && !timeUp) {
-        // Първо число веднага
         showNumber(sequence[index]);
         index++;
         if(index < sequence.length && !timeUp) {
-            // Второ число след delay според степента
             setTimeout(() => {
                 if(!timeUp){
                     showNumber(sequence[index]);
                     index++;
-                    // След това започва редовният интервал
                     numberInterval = setInterval(() => {
                         if(index < sequence.length && !timeUp) {
                             showNumber(sequence[index]);
@@ -231,23 +230,8 @@ function startTimer() {
         }
     }, 1000);
 }
-
-function checkAnswer() {
-    let userAnswer = parseInt(document.getElementById('userAnswer').value);
-    if(isNaN(userAnswer)) {
-        document.getElementById('error').innerText = "Моля, въведете число!";
-        return;
-    }
-    if(userAnswer === currentSum) {
-        document.getElementById('result').innerText = "Правилно! Резултатът е " + currentSum;
-        document.getElementById('error').innerText = '';
-    } else {
-        document.getElementById('result').innerText = "Грешно! Правилният резултат е " + currentSum;
-        document.getElementById('error').innerText = '';
-    }
-    document.getElementById('userAnswer').value = '';
-}
 </script>
+
 
 </body>
 </html>
